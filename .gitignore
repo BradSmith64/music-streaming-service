@@ -1,0 +1,43 @@
+## [Visual Studio]
+# .sln and other files
+.vs/
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# [Docker]
+# Ignore local Docker-related files if needed
+.dockerignore
+
+# [Testing]
+# Test results
+TestResults/
+
+# [Infrastructure]
+# SQLite database
+*.db
+*.db-shm
+*.db-wal
+
+# [Environment Files]
+.env
+appsettings.Development.json
+appsettings.local.json
+
+# [User Secrets]
+secrets.json
+
+# [GitHub]
+.github/
+
+# [OS]
+.DS_Store
+Thumbs.db

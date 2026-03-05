@@ -1,0 +1,10 @@
+services:
+  sql-server:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: sql1
+    ports:
+      - "${MSSQL_PORT}:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
+    restart: always
