@@ -6,7 +6,7 @@ A full-stack music streaming platform built with a .NET 10 backend and a Next.js
 
 - `music-streaming-minimal-api/`: The main entry point for the backend. Uses .NET 10 Minimal APIs.
   - `extensions/`: Contains custom extension methods (e.g., for OpenAPI/Scalar documentation).
-- `music-streaming-shadcn/`: The frontend application built with Next.js 16, React 19, Tailwind CSS v4, and Shadcn UI.
+- `music_streaming_service_frontend/` (Sibling directory): The frontend application built with Next.js 16, React 19, Tailwind CSS v4, and Shadcn UI.
 - `music-streaming-domain/`: Core business logic and domain entities (Songs, Likes).
 - `music-streaming-application/`: Contains use cases, query handlers, and command handlers (CQRS-lite).
 - `music-streaming-infrastructure/`: Data access implementations, Entity Framework Core context (`AppDbContext`), and adapters (Azure Blob Storage).
@@ -31,7 +31,7 @@ A full-stack music streaming platform built with a .NET 10 backend and a Next.js
    - This starts an **Azure SQL Edge** container (a lightweight version of SQL Server).
 3. **First-time/New Container Setup:** Whenever you start a fresh container (e.g., after `docker-compose down`), you must recreate the database schema and seed the initial data:
    - **Apply Migrations:** `dotnet ef database update --project music-streaming-infrastructure --startup-project music-streaming-minimal-api`
-   - **Seed Data:** `Get-Content seed.sql | docker exec -i sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Password123`
+   - **Seed Data:** `Get-Content seed.sql | docker exec -i sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P <YourPassword>`
 
 ### Backend
 1. Navigate to the backend directory: `cd music-streaming-minimal-api`
@@ -41,7 +41,7 @@ A full-stack music streaming platform built with a .NET 10 backend and a Next.js
    - Scalar API Reference: `http://localhost:5119/scalar/v1`
 
 ### Frontend
-1. Navigate to the frontend directory: `cd music-streaming-shadcn`
+1. Navigate to the frontend directory: `cd ../music_streaming_service_frontend`
 2. Install dependencies: `npm install`
 3. Run the development server: `npm run dev`
    - The frontend will be available at `http://localhost:3000`.
@@ -72,5 +72,5 @@ dotnet ef database update --project music-streaming-infrastructure --startup-pro
 ### Seeding
 Initial data (mock songs and likes) can be seeded using the `seed.sql` script executed directly in the Docker container:
 ```powershell
-Get-Content seed.sql | docker exec -i sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Password123
+Get-Content seed.sql | docker exec -i sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P <YourPassword>
 ```

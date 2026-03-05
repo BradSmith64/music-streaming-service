@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../music_streaming_service_frontend"
+		}
+	],
+	"settings": {}
+}

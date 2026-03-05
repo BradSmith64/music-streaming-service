@@ -20,7 +20,7 @@ Whenever you start a new container (e.g., after `docker-compose down`), you must
    ```
 3. **Seed Data:**
    ```powershell
-   Get-Content seed.sql | docker exec -i sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Password123
+   Get-Content seed.sql | docker exec -i sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P <YourPassword>
    ```
 
 ### Stop the environment
@@ -45,7 +45,7 @@ docker logs sql1
 ### Query the database interactively (sqlcmd)
 To enter an interactive SQL shell inside the container:
 ```powershell
-docker exec -it sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Password123
+docker exec -it sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P <YourPassword>
 ```
 Once inside, you can run T-SQL commands. Remember to type `GO` to execute them.
 Example:
@@ -58,13 +58,13 @@ GO
 ### Run a specific SQL command from the host
 You can pipe commands directly into the container without entering the interactive shell:
 ```powershell
-echo "SELECT * FROM [music-streaming].dbo.Songs" | docker exec -i sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Password123
+echo "SELECT * FROM [music-streaming].dbo.Songs" | docker exec -i sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P <YourPassword>
 ```
 
 ### Seed the database
 If you need to reset or re-seed your data using the provided `seed.sql` script:
 ```powershell
-Get-Content seed.sql | docker exec -i sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong!Password123
+Get-Content seed.sql | docker exec -i sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P <YourPassword>
 ```
 
 ## External Tools
@@ -73,6 +73,6 @@ You can connect to the database using tools like **Azure Data Studio** or **SQL 
 - **Server:** `localhost,1433`
 - **Authentication:** `SQL Server Authentication`
 - **User:** `sa`
-- **Password:** `YourStrong!Password123` (Check your root `.env` file)
+- **Password:** `<YourPassword>` (Check your root `.env` file)
 - **Trust Server Certificate:** `True`
 - **Database:** `music-streaming`
