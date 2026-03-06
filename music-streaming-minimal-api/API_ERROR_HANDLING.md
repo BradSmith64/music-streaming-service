@@ -12,20 +12,23 @@ This document tracks implemented and proposed improvements for standardized erro
     - Updated `POST` and `DELETE` likes endpoints to return this DTO.
     - Added `.Produces<ErrorResponseDTO>` metadata to endpoints for Swagger documentation.
 
-### Transition to Native OpenAPI (.NET 10+)
+### Swashbuckle Integration (.NET 8.0)
 - **Fix**: 
-    - Moved away from `Swashbuckle.AspNetCore` in favor of the built-in `Microsoft.AspNetCore.OpenApi` support (`builder.Services.AddOpenApi()`).
-    - Integrated `Scalar.AspNetCore` for modern API documentation UI.
-    - Implemented custom `WithResponseDescription` extension for clean response documentation.
-    - This resolved deprecation warnings related to `.WithOpenApi()` and aligned the project with modern .NET standards.
+    - Integrated `Swashbuckle.AspNetCore` (Swagger) for API documentation.
+    - Configured `AddEndpointsApiExplorer()` and `AddSwaggerGen()` in `Program.cs`.
+    - Note: Switched from .NET 10 Native OpenAPI to Swashbuckle to ensure compatibility with Azure App Service Linux runtimes.
 
-## 2. Proposed Improvements
+## 2. Backlog / To-Do
+
+### Restore Response Descriptions in Swagger
+- **Issue**: The custom `.WithResponseDescription()` extension method was simplified to a placeholder during the .NET 8.0/Swashbuckle migration. As a result, specific status code descriptions (e.g., "The song was successfully liked") are missing from the Swagger UI.
+- **Goal**: Implement a custom `IOperationFilter` for Swashbuckle that can read custom metadata or attributes to restore these descriptions.
+
+## 3. Proposed Improvements
 
 ### Standardized `ProblemDetails` (RFC 7807)
 - **Target**: Global API error handling.
 - **Proposal**: 
     - Transition from `ErrorResponseDTO` to the ASP.NET Core built-in `ProblemDetails` class.
-    - Use `builder.Services.AddProblemDetails()` in `Program.cs`.
     - Implement a global exception handler or middleware to automatically map domain exceptions (like `SongNotFoundException`) to standard `ProblemDetails` responses.
-- **Benefit**: Adheres to the industry-standard RFC 7807, providing a consistent, extensible format for error details that is recognized by many client libraries and tools.
-- **ErrorCode Mapping**: The custom `ErrorCode` can be included in the `Extensions` dictionary of `ProblemDetails`.
+- **Benefit**: Adheres to the industry-standard RFC 7807.

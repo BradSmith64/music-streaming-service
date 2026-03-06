@@ -1,11 +1,12 @@
 # Music Streaming Service - Project Overview
 
-A full-stack music streaming platform built with a .NET 10 backend and a Next.js (React 19) frontend. The project demonstrates modern software architecture patterns, including CQRS-lite, repository patterns, and a standardized SQL Server database setup.
+A full-stack music streaming platform built with a .NET 8 backend and a Next.js (React 19) frontend. The project demonstrates modern software architecture patterns, including CQRS-lite, repository patterns, and a standardized SQL Server database setup.
 
 ## Project Structure
 
-- `music-streaming-minimal-api/`: The main entry point for the backend. Uses .NET 10 Minimal APIs.
-  - `extensions/`: Contains custom extension methods (e.g., for OpenAPI/Scalar documentation).
+- `music-streaming-minimal-api/`: The main entry point for the backend. Uses .NET 8 Minimal APIs.
+  - `extensions/`: Contains custom extension methods (e.g., for Swagger documentation).
+  - **`DEPLOYMENT_GUIDE.md`**: Detailed instructions for Azure deployment.
 - `music_streaming_service_frontend/` (Sibling directory): The frontend application built with Next.js 16, React 19, Tailwind CSS v4, and Shadcn UI.
 - `music-streaming-domain/`: Core business logic and domain entities (Songs, Likes).
 - `music-streaming-application/`: Contains use cases, query handlers, and command handlers (CQRS-lite).
@@ -13,15 +14,15 @@ A full-stack music streaming platform built with a .NET 10 backend and a Next.js
 
 ## Key Technologies
 
-- **Backend:** .NET 10, Entity Framework Core, SQL Server (via Azure SQL Edge), Azure Blob Storage.
+- **Backend:** .NET 8 (retargeted for Azure compatibility), Entity Framework Core, SQL Server (via Azure SQL Edge), Azure Blob Storage.
 - **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS v4, Radix UI, Lucide React, Shadcn UI components.
-- **API Documentation:** Microsoft.AspNetCore.OpenApi + Scalar UI.
+- **API Documentation:** Swashbuckle (Swagger).
 - **Database:** SQL Server (Azure SQL Edge) is used for local development via Docker. The system is architected to align with production SQL Server instances on Azure.
 
 ## Building and Running
 
 ### Prerequisites
-- .NET 10 SDK
+- .NET 8 SDK (or later)
 - Node.js (Latest LTS recommended)
 - **Docker Desktop:** Required for running the local SQL Server instance.
 
@@ -38,7 +39,7 @@ A full-stack music streaming platform built with a .NET 10 backend and a Next.js
 2. Restore dependencies: `dotnet restore`
 3. Run the application: `dotnet run`
    - The API will be available at `http://localhost:5119`.
-   - Scalar API Reference: `http://localhost:5119/scalar/v1`
+   - Swagger API Reference: `http://localhost:5119/swagger`
 
 ### Frontend
 1. Navigate to the frontend directory: `cd ../music_streaming_service_frontend`
@@ -46,12 +47,17 @@ A full-stack music streaming platform built with a .NET 10 backend and a Next.js
 3. Run the development server: `npm run dev`
    - The frontend will be available at `http://localhost:3000`.
 
+## Azure Deployment (Backend)
+
+For detailed, step-by-step instructions on the "Clean and Deploy" strategy for the backend, please refer to:
+**`music-streaming-minimal-api/DEPLOYMENT_GUIDE.md`**
+
 ## Development Conventions
 
 - **CQRS-lite:** Logic is separated into Use Cases (Commands) and Query Handlers.
 - **Repository Pattern:** Infrastructure implements repository interfaces defined in the domain/application layer.
 - **Unified Connection Strings:** The application uses a single `DefaultConnection` string defined in `appsettings.Development.json` for local development.
-- **CORS:** The API is configured to allow `http://localhost:3000`.
+- **CORS:** The API is configured to allow `http://localhost:3000` and Azure production origins.
 
 ## Configuration
 
@@ -61,16 +67,13 @@ A full-stack music streaming platform built with a .NET 10 backend and a Next.js
 - **Frontend:** `.env.local` contains the `NEXT_PUBLIC_ENV_URL` pointing to the backend API.
 - **Environment:** A root `.env` file stores the SQL Server SA password and port used by Docker.
 
-## Database Migrations and Seeding
+## Database Migrations and Seeding (Azure)
 
 ### Migrations
-The project uses EF Core Migrations for SQL Server. To apply them to a fresh database:
+To apply migrations to the Azure SQL Database, temporarily update the connection string in `appsettings.Development.json` and run:
 ```bash
 dotnet ef database update --project music-streaming-infrastructure --startup-project music-streaming-minimal-api
 ```
 
 ### Seeding
-Initial data (mock songs and likes) can be seeded using the `seed.sql` script executed directly in the Docker container:
-```powershell
-Get-Content seed.sql | docker exec -i sql1 /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P <YourPassword>
-```
+Use the provided `seed.sql` script (updating the `USE [database]` name as necessary for Azure) via a SQL client that has firewall access to the Azure SQL Server.

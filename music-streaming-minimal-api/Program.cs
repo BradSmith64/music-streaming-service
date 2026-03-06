@@ -4,12 +4,13 @@ using music_streaming_infrastructure;
 using music_streaming_minimal_api;
 using music_streaming_domain.Songs;
 using Microsoft.Extensions.Options;
-using Scalar.AspNetCore;
 using music_streaming_minimal_api.extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi();
+// Add services to the container.
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 string? conn_string = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -59,11 +60,9 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
-
-// ToDo: run EF migrations in code.
 
 app.UseCors("AllowOrigin");
 
