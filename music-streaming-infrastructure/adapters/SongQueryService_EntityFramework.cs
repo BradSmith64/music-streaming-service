@@ -6,12 +6,10 @@ using music_streaming_infrastructure;
 public class SongQueryService_EntityFramework : ISongQueryService
 {
     private AppDbContext _context;
-    private ISongStorage _storage;
 
-    public SongQueryService_EntityFramework(AppDbContext context, ISongStorage storage)
+    public SongQueryService_EntityFramework(AppDbContext context)
     {
         _context = context;
-        _storage = storage;
     }
 
     public async Task<List<SongMetadata>> GetSongsAsync(int userId)
@@ -39,7 +37,7 @@ public class SongQueryService_EntityFramework : ISongQueryService
             LikeCount = song.LikeCount,
             LikedByUser = song.LikedByUser,
             FileName = song.FileName,
-            Url = ! string.IsNullOrEmpty(song.FileName) ? _storage.GetFileUri(song.FileName) : ""
+            Url = null // URL is enriched in the application layer
         }).ToList();
 
         return songMetadata;

@@ -1,4 +1,4 @@
-USE [music-streaming];
+USE [music-streaming-db];
 GO
 
 -- Enable identity insert to allow explicit IDs if needed, 

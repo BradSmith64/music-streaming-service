@@ -1,6 +1,9 @@
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
+using music_streaming_application;
+
+namespace music_streaming_infrastructure;
 
 public class SongStorage_AzureBlobStorage : ISongStorage
 {
@@ -51,6 +54,21 @@ public class SongStorage_AzureBlobStorage : ISongStorage
         Console.WriteLine($"Generated SAS token {sasUri.ToString()}");
 
         return sasUri.ToString();
+    }
+
+    public Task DeleteFileAsync(string blobUri)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Stream> OpenReadStreamAsync(string blobUri)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task UploadFileAsync(string path, Stream content)
+    {
+        throw new NotImplementedException();
     }
 }
 

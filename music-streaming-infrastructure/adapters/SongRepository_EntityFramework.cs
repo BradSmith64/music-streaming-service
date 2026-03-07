@@ -7,12 +7,10 @@ namespace music_streaming_infrastructure;
 public class SongRepository_EntityFramework : ISongRepository
 {
     private AppDbContext _context;
-    private ISongStorage _storage;
 
-    public SongRepository_EntityFramework(AppDbContext context, ISongStorage storage)
+    public SongRepository_EntityFramework(AppDbContext context)
     {
         _context = context;
-        _storage = storage;
     }
     
     public async Task<int> LikeSongAsync(Song song, Like like)
