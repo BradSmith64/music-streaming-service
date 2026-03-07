@@ -26,6 +26,9 @@ TestResults/
 *.db
 *.db-shm
 *.db-wal
+# Build Artifacts
+publish/
+*.zip
 
 # [Environment Files]
 .env
