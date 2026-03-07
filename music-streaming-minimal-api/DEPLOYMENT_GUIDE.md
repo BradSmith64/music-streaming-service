@@ -1,42 +1,29 @@
 # Azure Deployment Guide: .NET 8 Backend
 
-This guide details the definitive process for deploying the `music-streaming-minimal-api` to the Azure App Service (Linux). 
+This guide details the automated process for deploying the `music-streaming-minimal-api` to the Azure App Service (Linux) using GitHub Actions.
 
-## The "Clean and Deploy" Strategy
+## Automated Deployment (CI/CD)
 
-To ensure a successful deployment on the Azure F1 (Free) tier and avoid issues with polluted build environments or malformed zip archives on Linux, always follow these steps:
+The backend is configured to automatically build and deploy whenever changes are pushed to the `main` branch.
 
-### 1. Clean and Publish locally
-Navigate to the `music-streaming-minimal-api` folder and run these commands to ensure only the necessary .NET 8 files are included:
+### 1. GitHub Actions Workflow
+The workflow is defined in `.github/workflows/azure-web-app.yml`. It performs the following steps:
+- Restores and builds the .NET 8 solution.
+- Publishes the application specifically for **linux-x64**.
+- Deploys the artifacts to the Azure App Service using a **Publish Profile**.
 
-```powershell
-# Delete existing publish artifacts
-Remove-Item -Path "publish", "publish.zip" -Recurse -Force -ErrorAction SilentlyContinue
+### 2. Required Secrets
+To enable the pipeline, the following secret must be configured in your GitHub repository (**Settings > Secrets and variables > Actions**):
+- `AZURE_WEBAPP_PUBLISH_PROFILE`: The XML publish profile downloaded from the Azure Portal (or via `az webapp deployment list-publishing-profiles`).
 
-# Publish fresh for Linux x64 (Framework-dependent)
-dotnet publish -c Release -r linux-x64 --no-self-contained -o ./publish
-```
-
-### 2. Zip the CONTENTS
-You must zip the **contents** of the `publish` folder, not the folder itself. This ensures the `.dll` and `runtimeconfig.json` files are at the root of the archive for the App Service to find.
-
-```powershell
-Push-Location publish
-Compress-Archive -Path * -DestinationPath ../publish.zip -Force
-Pop-Location
-```
-
-### 3. Deploy via Azure CLI
-Use the `az webapp deploy` command. This is more reliable than the deprecated `config-zip` command for Linux hosts:
-
-```powershell
-az webapp deploy --resource-group rg-music-streaming-poc --name app-api-music-65395c94 --src-path publish.zip --type zip
-```
+### 3. Manual Trigger
+You can also trigger a deployment manually from the **Actions** tab in GitHub by selecting the "Build and Deploy .NET 8 Backend to Azure" workflow and clicking **Run workflow**.
 
 ---
 
 ## Troubleshooting
 
-- **400/500 Errors during warm-up**: If the CLI returns an error but you see the files in `wwwroot` via the Kudu console, simply **Restart the App Service**. The deployment often succeeds even if the warm-up phase times out.
-- **Runtime Mismatch**: Ensure the project targets `net8.0`. If you see .NET 10 errors in the logs, perform a `dotnet clean` before publishing.
-- **Swagger missing**: Ensure `ASPNETCORE_ENVIRONMENT` is set to `Development` in the App Service settings.
+- **Deployment Logs**: Check the **Actions** tab in GitHub for detailed build and deployment logs.
+- **Kudu Console**: For file-level verification on the server, visit `https://<app-name>.scm.azurewebsites.net/DebugConsole`.
+- **Runtime Mismatch**: Ensure the project targets `net8.0`.
+- **Swagger missing**: Ensure `ASPNETCORE_ENVIRONMENT` is set to `Development` in the App Service settings via the Azure Portal.
