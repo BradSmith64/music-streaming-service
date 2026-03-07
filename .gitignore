@@ -36,7 +36,7 @@ appsettings.local.json
 secrets.json
 
 # [GitHub]
-.github/
+# .github/
 
 # [OS]
 .DS_Store
