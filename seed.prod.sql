@@ -22,13 +22,13 @@ SET IDENTITY_INSERT [Albums] OFF;
 -- Insert Anonymized Songs
 SET IDENTITY_INSERT [Songs] ON;
 INSERT INTO [Songs] (Id, Title, AlbumId, FileName, ReleaseDate) 
-VALUES (1, 'Song A', 1, 'seed-user-album-one-song-a.mp3', '2020-01-01');
+VALUES (1, 'Song A', 1, 'seed-user-album-one-song-a.wav', '2020-01-01');
 
 INSERT INTO [Songs] (Id, Title, AlbumId, FileName, ReleaseDate) 
-VALUES (2, 'Song B', 2, 'seed-user-album-two-song-b.mp3', '2021-06-15');
+VALUES (2, 'Song B', 2, 'seed-user-album-two-song-b.wav', '2021-06-15');
 
 INSERT INTO [Songs] (Id, Title, AlbumId, FileName, ReleaseDate) 
-VALUES (3, 'Song C', 3, 'seed-user-album-three-song-c.mp3', '2022-12-31');
+VALUES (3, 'Song C', 3, 'seed-user-album-three-song-c.wav', '2022-12-31');
 SET IDENTITY_INSERT [Songs] OFF;
 
 -- Insert Minimal Sample Likes
