@@ -33,16 +33,24 @@ builder.Services.AddScoped<UnlikeSongUseCase>();
 builder.Services.AddScoped<ISongQueryService, SongQueryService_EntityFramework>();
 builder.Services.AddScoped<ISongRepository, SongRepository_EntityFramework>();
 
-// Bind MusicStorage section to strongly typed class
-builder.Services.Configure<SongStorage_AzureBlobStorageOptions>(
-    builder.Configuration.GetSection("SongStorage")
-);
-
-builder.Services.AddScoped<ISongStorage>((sp) =>
+// Configure storage based on environment
+if (builder.Environment.IsDevelopment())
 {
-    var options = sp.GetRequiredService<IOptions<SongStorage_AzureBlobStorageOptions>>().Value;
-    return new SongStorage_AzureBlobStorage(options);
-});
+    builder.Services.AddScoped<ISongStorage>(sp => new SongStorage_LocalHttpServer("http://localhost:8080/"));
+}
+else
+{
+    // Bind MusicStorage section to strongly typed class
+    builder.Services.Configure<SongStorage_AzureBlobStorageOptions>(
+        builder.Configuration.GetSection("SongStorage")
+    );
+
+    builder.Services.AddScoped<ISongStorage>((sp) =>
+    {
+        var options = sp.GetRequiredService<IOptions<SongStorage_AzureBlobStorageOptions>>().Value;
+        return new SongStorage_AzureBlobStorage(options);
+    });
+}
 
 // Add CORS service
 builder.Services.AddCors(options =>
