@@ -79,6 +79,7 @@ app.MapGet("/songs", async (GetSongsQueryHandler handler) =>
             SongId = song.SongId,
             Title = song.Title,
             AlbumTitle = song.AlbumTitle,
+            ArtistName = song.ArtistName,
             ReleaseDate = song.ReleaseDate,
             LikeCount = song.LikeCount,
             LikedByUser = song.LikedByUser,

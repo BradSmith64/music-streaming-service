@@ -1,40 +1,38 @@
-USE [music-streaming-db];
-GO
+-- Set IDENTITY_INSERT OFF by default
+-- Clear existing data
+DELETE FROM [Likes];
+DELETE FROM [Songs];
+DELETE FROM [Albums];
+DELETE FROM [Artists];
 
--- Enable identity insert to allow explicit IDs if needed, 
--- or just let the DB handle it if you don't care about matching the exact IDs from the mock.
--- Since the mock uses 1-20, let's try to match them.
+-- Insert Artists
+SET IDENTITY_INSERT [Artists] ON;
+INSERT INTO [Artists] (Id, Name) VALUES (1, 'Queen');
+INSERT INTO [Artists] (Id, Name) VALUES (2, 'The Beatles');
+INSERT INTO [Artists] (Id, Name) VALUES (3, 'David Bowie');
+SET IDENTITY_INSERT [Artists] OFF;
 
+-- Insert Albums
+SET IDENTITY_INSERT [Albums] ON;
+INSERT INTO [Albums] (Id, Title, ArtistId) VALUES (1, 'A Night at the Opera', 1);
+INSERT INTO [Albums] (Id, Title, ArtistId) VALUES (2, 'Abbey Road', 2);
+INSERT INTO [Albums] (Id, Title, ArtistId) VALUES (3, 'The Rise and Fall of Ziggy Stardust', 3);
+SET IDENTITY_INSERT [Albums] OFF;
+
+-- Insert Songs
 SET IDENTITY_INSERT [Songs] ON;
+INSERT INTO [Songs] (Id, Title, AlbumId, FileName, ReleaseDate) 
+VALUES (1, 'Bohemian Rhapsody', 1, 'seed-user-a-night-at-the-opera-bohemian-rhapsody.mp3', '1975-10-31');
 
-INSERT INTO [Songs] ([Id], [Title], [AlbumTitle], [ReleaseDate], [FileName]) VALUES
-(1, 'Song 1', 'Album 1', GETUTCDATE(), 'sample1.mp3'),
-(2, 'Song 2', 'Album 2', GETUTCDATE(), 'sample2.wav'),
-(3, 'Song 3', 'Album 3', GETUTCDATE(), 'sample3.wav'),
-(4, 'Song 4', 'Album 4', GETUTCDATE(), 'sample1.mp3'),
-(5, 'Song 5', 'Album 5', GETUTCDATE(), 'sample2.wav'),
-(6, 'Song 6', 'Album 6', GETUTCDATE(), 'sample3.wav'),
-(7, 'Song 7', 'Album 7', GETUTCDATE(), 'sample1.mp3'),
-(8, 'Song 8', 'Album 8', GETUTCDATE(), 'sample2.wav'),
-(9, 'Song 9', 'Album 9', GETUTCDATE(), 'sample3.wav'),
-(10, 'Song 10', 'Album 10', GETUTCDATE(), 'sample1.mp3'),
-(11, 'Song 11', 'Album 11', GETUTCDATE(), 'sample2.wav'),
-(12, 'Song 12', 'Album 12', GETUTCDATE(), 'sample3.wav'),
-(13, 'Song 13', 'Album 13', GETUTCDATE(), 'sample1.mp3'),
-(14, 'Song 14', 'Album 14', GETUTCDATE(), 'sample2.wav'),
-(15, 'Song 15', 'Album 15', GETUTCDATE(), 'sample3.wav'),
-(16, 'Song 16', 'Album 16', GETUTCDATE(), 'sample1.mp3'),
-(17, 'Song 17', 'Album 17', GETUTCDATE(), 'sample2.wav'),
-(18, 'Song 18', 'Album 18', GETUTCDATE(), 'sample3.wav'),
-(19, 'Song 19', 'Album 19', GETUTCDATE(), 'sample1.mp3'),
-(20, 'Song 20', 'Album 20', GETUTCDATE(), 'sample2.wav');
+INSERT INTO [Songs] (Id, Title, AlbumId, FileName, ReleaseDate) 
+VALUES (2, 'Come Together', 2, 'seed-user-abbey-road-come-together.mp3', '1969-09-26');
 
+INSERT INTO [Songs] (Id, Title, AlbumId, FileName, ReleaseDate) 
+VALUES (3, 'Starman', 3, 'seed-user-the-rise-and-fall-of-ziggy-stardust-starman.mp3', '1972-04-28');
 SET IDENTITY_INSERT [Songs] OFF;
-GO
 
--- Optional: Seed a few likes
-INSERT INTO [Likes] ([SongId], [UserId], [CreatedAt]) VALUES
-(1, 1, GETUTCDATE()),
-(5, 1, GETUTCDATE()),
-(10, 1, GETUTCDATE());
-GO
+-- Insert Likes
+INSERT INTO [Likes] (SongId, UserId, CreatedAt) VALUES (1, 101, GETUTCDATE());
+INSERT INTO [Likes] (SongId, UserId, CreatedAt) VALUES (1, 102, GETUTCDATE());
+INSERT INTO [Likes] (SongId, UserId, CreatedAt) VALUES (2, 101, GETUTCDATE());
+INSERT INTO [Likes] (SongId, UserId, CreatedAt) VALUES (3, 103, GETUTCDATE());

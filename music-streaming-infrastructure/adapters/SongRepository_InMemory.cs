@@ -4,76 +4,89 @@ using music_streaming_infrastructure;
 
 public class SongRepository_InMemory : ISongRepository
 {
-    // Assumes that node http-server is running on port 8080 for serving files.
-
     private readonly object _lock = new object();
 
     public async Task<Song> GetSongByIdAsync(int songId)
     {
         var entity = await MockSongDatabase.GetSongById(songId);
+        if (entity == null) throw new SongNotFoundException(songId);
 
-        if( entity == null )
-        {
-            throw new SongNotFoundException(songId);
-        }
+        return MapToDomain(entity);
+    }
 
-        return await Task.FromResult(new Song()
-        {
-            Id = entity.Id,
-            Title = entity.Title,
-            AlbumTitle = entity.AlbumTitle,
-            ReleaseDate = entity.ReleaseDate,
-            FileName = entity.FileName,
-            Likes = entity.Likes.Select( ( like ) => new Like { Id = like.Id, SongId = like.SongId, UserId = like.UserId, CreatedAt = like.CreatedAt } ).ToList()
-        });
+    public Task<Song?> GetSongByTitleAndAlbumAsync(string title, string albumTitle)
+    {
+        // Simple mock implementation
+        return Task.FromResult<Song?>(null);
+    }
+
+    public Task<int> AddSongAsync(Song song)
+    {
+        return Task.FromResult(0);
+    }
+
+    public Task<Artist?> GetArtistByNameAsync(string name)
+    {
+        return Task.FromResult<Artist?>(null);
+    }
+
+    public Task<int> AddArtistAsync(Artist artist)
+    {
+        return Task.FromResult(0);
+    }
+
+    public Task<Album?> GetAlbumByTitleAndArtistAsync(string title, int artistId)
+    {
+        return Task.FromResult<Album?>(null);
+    }
+
+    public Task<int> AddAlbumAsync(Album album)
+    {
+        return Task.FromResult(0);
     }
 
     public async Task<int> LikeSongAsync(Song song, Like like)
     {
-        int newId = 1;
         var entity = await MockSongDatabase.GetSongById(song.Id);
+        if (entity == null) throw new SongNotFoundException(song.Id);
 
-        if( entity == null )
+        lock (_lock)
         {
-            throw new SongNotFoundException(song.Id);
+            int newId = entity.Likes.Any() ? entity.Likes.Max(l => l.Id) + 1 : 1;
+            entity.Likes.Add(new music_streaming_infrastructure.Persistence.Like 
+            { 
+                Id = newId, 
+                SongId = song.Id, 
+                UserId = like.UserId, 
+                CreatedAt = DateTime.UtcNow 
+            });
+            return newId;
         }
-
-        if( entity.Likes.Any( l => l.UserId == like.UserId ) )
-        {
-            throw new SongAlreadyLikedException(song.Id);
-        }
-
-        lock( _lock )
-        {
-            var lastLike = entity.Likes.OrderByDescending(l => l.Id).FirstOrDefault();
-
-            if( lastLike != null )
-            {
-                newId = lastLike.Id + 1;
-            }
-
-            entity.Likes.Add( new music_streaming_infrastructure.Persistence.Like { Id = newId, SongId = song.Id, UserId = like.UserId, CreatedAt = DateTime.UtcNow });
-        }
-
-        return newId;
     }
 
     public async Task UnlikeSongAsync(Song song, int userId)
     {
-        var song_entity = await MockSongDatabase.GetSongById(song.Id);
+        var entity = await MockSongDatabase.GetSongById(song.Id);
+        if (entity == null) throw new SongNotFoundException(song.Id);
 
-        if( song_entity == null )
+        var like = entity.Likes.FirstOrDefault(l => l.UserId == userId);
+        if (like != null)
         {
-            throw new SongNotFoundException(song.Id);
+            entity.Likes.Remove(like);
         }
+    }
 
-        var like_entity = song_entity.Likes.FirstOrDefault( like => like.UserId == userId );
-
-        if( like_entity == null )
+    private Song MapToDomain(music_streaming_infrastructure.Persistence.Song entity)
+    {
+        // Note: MockSongDatabase is still using old structure, so we mock the Album/Artist part
+        return new Song
         {
-            throw new SongIsntLikedException(song.Id);
-        }
-
-        song_entity.Likes.Remove(like_entity);
+            Id = entity.Id,
+            Title = entity.Title,
+            Album = new Album { Id = 0, Title = "Mock Album", Artist = new Artist { Id = 0, Name = "Mock Artist" } },
+            ReleaseDate = entity.ReleaseDate,
+            FileName = entity.FileName,
+            Likes = entity.Likes.Select(l => new Like { Id = l.Id, SongId = l.SongId, UserId = l.UserId, CreatedAt = l.CreatedAt }).ToList()
+        };
     }
 }

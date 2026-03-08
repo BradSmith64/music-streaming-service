@@ -1,13 +1,26 @@
 namespace music_streaming_domain.Songs;
 
+public class Artist
+{
+    public required int Id { get; set; }
+    public required string Name { get; set; }
+}
+
+public class Album
+{
+    public required int Id { get; set; }
+    public required string Title { get; set; }
+    public required Artist Artist { get; set; }
+}
+
 public class Song
 {
     public required int Id { get; set; }
     public required string Title { get; set; }
-    public required string AlbumTitle { get; set; }
+    public required Album Album { get; set; }
     public DateTime? ReleaseDate { get; set; }
     public required List<Like> Likes { get; set; }
-    public required string? FileName { get; set; }
+    public required string FileName { get; set; }
 
     public Like Like(int userId)
     {
@@ -44,6 +57,7 @@ public class Like
     public required DateTime CreatedAt { get; set; }
 }
 
+// Exceptions remain the same...
 public class SongNotFoundException : Exception
 {
     public SongNotFoundException(int songId) : base($"The requested song (with ID {songId}) was not found") { }

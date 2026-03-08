@@ -20,7 +20,8 @@ public class SongQueryService_EntityFramework : ISongQueryService
             {
                 SongId = song.Id,
                 Title = song.Title,
-                AlbumTitle = song.AlbumTitle,
+                AlbumTitle = song.Album.Title,
+                ArtistName = song.Album.Artist.Name,
                 ReleaseDate = song.ReleaseDate,
                 LikeCount = song.Likes.Count,
                 LikedByUser = song.Likes.Any( like => like.UserId == userId ),
@@ -33,6 +34,7 @@ public class SongQueryService_EntityFramework : ISongQueryService
             SongId = song.SongId,
             Title = song.Title,
             AlbumTitle = song.AlbumTitle,
+            ArtistName = song.ArtistName,
             ReleaseDate = song.ReleaseDate,
             LikeCount = song.LikeCount,
             LikedByUser = song.LikedByUser,

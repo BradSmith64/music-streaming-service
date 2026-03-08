@@ -19,6 +19,9 @@ public class SongDTO
     [JsonPropertyName("albumTitle"), Required]
     public required string AlbumTitle { get; set; }
 
+    [JsonPropertyName("artistName"), Required]
+    public required string ArtistName { get; set; }
+
     [JsonPropertyName("releaseDate")]
     public DateTime? ReleaseDate { get; set; }    
 
