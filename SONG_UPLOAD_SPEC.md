@@ -60,11 +60,11 @@ The `RegisterSongUseCase` coordinates the following steps via Application Layer 
     - Build `RegisterSongUseCase` with deterministic naming logic and JIT artist/album provisioning.
     - Verified logic with AAA unit tests in `music-streaming-application.tests`.
 
-### Phase 3: Infrastructure Adapters [CURRENT]
+### Phase 3: Infrastructure Adapters [COMPLETE]
 7.  **Metadata Implementation:** Implement `MetadataService_TagLib` using TagLibSharp for stream-based extraction.
 8.  **Storage Implementation:** Update `AzureBlobStorageAdapter` to implement full read/write/delete capabilities.
 
-### Phase 4: Cloud Infrastructure (Terraform)
+### Phase 4: Cloud Infrastructure (Terraform) [COMPLETE]
 9.  **Provision Storage:** Add the `songs-landing-zone` container.
 10. **Provision Messaging:** Add the Service Bus Namespace (Basic) and Event Grid System Topic.
 11. **Provision Compute:** Add the Linux Function App.

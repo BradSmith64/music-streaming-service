@@ -29,14 +29,24 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<GetSongsQueryHandler>();
 builder.Services.AddScoped<LikeSongUseCase>();
 builder.Services.AddScoped<UnlikeSongUseCase>();
+builder.Services.AddScoped<RegisterSongUseCase>();
 
+builder.Services.AddScoped<IMetadataService, MetadataService_TagLib>();
 builder.Services.AddScoped<ISongQueryService, SongQueryService_EntityFramework>();
 builder.Services.AddScoped<ISongRepository, SongRepository_EntityFramework>();
 
 // Configure storage based on environment
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddScoped<ISongStorage>(sp => new SongStorage_LocalHttpServer("http://localhost:8080/"));
+    builder.Services.Configure<SongStorage_LocalHttpServerOptions>(
+        builder.Configuration.GetSection(SongStorage_LocalHttpServerOptions.SectionName)
+    );
+
+    builder.Services.AddScoped<ISongStorage>((sp) =>
+    {
+        var options = sp.GetRequiredService<IOptions<SongStorage_LocalHttpServerOptions>>().Value;
+        return new SongStorage_LocalHttpServer(options);
+    });
 }
 else
 {
@@ -75,6 +85,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowOrigin");
 
 app.UseHttpsRedirection();
+
+app.MapSimulationEndpoints();
 
 app.MapGet("/songs", async (GetSongsQueryHandler handler) =>
 {

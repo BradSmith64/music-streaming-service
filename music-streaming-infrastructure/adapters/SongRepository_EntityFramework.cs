@@ -29,13 +29,13 @@ public class SongRepository_EntityFramework : ISongRepository
         return MapToDomain(entity);
     }
 
-    public async Task<Song?> GetSongByTitleAndAlbumAsync(string title, string albumTitle)
+    public async Task<Song?> GetSongByTitleAlbumAndArtistAsync(string title, string albumTitle, int artistId)
     {
         var entity = await _context.Songs
             .Include(s => s.Album)
                 .ThenInclude(a => a.Artist)
             .Include(s => s.Likes)
-            .FirstOrDefaultAsync(s => s.Title == title && s.Album.Title == albumTitle);
+            .FirstOrDefaultAsync(s => s.Title == title && s.Album.Title == albumTitle && s.Album.ArtistId == artistId);
 
         return entity != null ? MapToDomain(entity) : null;
     }

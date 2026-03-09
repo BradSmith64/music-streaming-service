@@ -41,6 +41,11 @@ secrets.json
 # [GitHub]
 # .github/
 
+# [Local Assets]
+local_music/
+*.wav
+*.mp3
+
 # [OS]
 .DS_Store
 Thumbs.db

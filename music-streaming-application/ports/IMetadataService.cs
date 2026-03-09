@@ -2,8 +2,9 @@ namespace music_streaming_application;
 
 public interface IMetadataService
 {
-    Task<ID3Metadata> ExtractMetadataAsync(Stream audioStream);
+    public Task<ID3Metadata> ExtractMetadataAsync(Stream audioStream, string fileName);
 }
+
 
 public class ID3Metadata
 {

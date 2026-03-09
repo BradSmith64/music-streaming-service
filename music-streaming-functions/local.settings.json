@@ -1,0 +1,15 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+        "ServiceBus__ConnectionString": "your-connection-string",
+        "SongStorage__AccountName": "your-storage-account-name",
+        "SongStorage__AccountKey": "your-storage-account-key",
+        "SongStorage__ContainerName": "music",
+        "SongStorage__ExpiryMinutes": "60"
+    },
+    "ConnectionStrings": {
+        "DefaultConnection": "Server=localhost;Database=music-streaming-db;User Id=sa;Password=your-password;"
+    }
+}

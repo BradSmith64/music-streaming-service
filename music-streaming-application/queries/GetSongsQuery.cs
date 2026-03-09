@@ -21,7 +21,7 @@ public class GetSongsQueryHandler
         {
             if( ! string.IsNullOrEmpty(song.FileName) )
             {
-                song.Url = _storage.GetFileUri(song.FileName);
+                song.Url = _storage.GeneratePublicStreamingUri(song.FileName);
             }
         }
 

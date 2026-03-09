@@ -19,62 +19,124 @@ public class RegisterSongUseCase
     public async Task ExecuteAsync(RegisterSongCommand command)
     {
         // 1. Get Metadata (Reading just a small part of the stream)
-        using var metadataStream = await _storage.OpenReadStreamAsync(command.BlobUri);
-        var metadata = await _metadataService.ExtractMetadataAsync(metadataStream);
+        Stream? metadataStream = null;
+        ID3Metadata metadata;
+        try
+        {
+            metadataStream = await _storage.OpenLandingZoneStreamAsync(command.BlobUri);
+            metadata = await _metadataService.ExtractMetadataAsync(metadataStream, command.BlobUri);
+        }
+        catch (Exception ex)
+        {
+            throw new MetadataExtractionException(command.BlobUri, "Failed to open or read stream for metadata extraction", ex);
+        }
+        finally
+        {
+            metadataStream?.Dispose();
+        }
 
-        // 2. Idempotency Check: Check if song already exists in database
-        var existingSong = await _repository.GetSongByTitleAndAlbumAsync(metadata.Title, metadata.AlbumTitle);
+        if (string.IsNullOrWhiteSpace(metadata.Title))
+        {
+            throw new MetadataExtractionException(command.BlobUri, "Extracted title is empty or null.");
+        }
+
+        // 2. Ensure Artist Exists
+        var artistName = metadata.Artist ?? "Unknown Artist";
+        Artist? artist;
+        try 
+        {
+            artist = await _repository.GetArtistByNameAsync(artistName);
+            if (artist == null)
+            {
+                artist = new Artist { Id = 0, Name = artistName };
+                artist.Id = await _repository.AddArtistAsync(artist);
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new ApplicationException($"Failed to resolve or create artist: {artistName}", ex);
+        }
+
+        // 3. Ensure Album Exists
+        var albumTitle = metadata.AlbumTitle ?? "Unknown Album";
+        Album? album;
+        try
+        {
+            album = await _repository.GetAlbumByTitleAndArtistAsync(albumTitle, artist.Id);
+            if (album == null)
+            {
+                album = new Album { Id = 0, Title = albumTitle, Artist = artist };
+                album.Id = await _repository.AddAlbumAsync(album);
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new ApplicationException($"Failed to resolve or create album: {albumTitle}", ex);
+        }
+
+        // 4. Idempotency Check: Check if song already exists in this artist/album context
+        var existingSong = await _repository.GetSongByTitleAlbumAndArtistAsync(metadata.Title, albumTitle, artist.Id);
         if (existingSong != null)
         {
-            return;
-        }
-
-        // 3. Ensure Artist Exists
-        var artistName = metadata.Artist ?? "Unknown Artist";
-        var artist = await _repository.GetArtistByNameAsync(artistName);
-        if (artist == null)
-        {
-            artist = new Artist { Id = 0, Name = artistName };
-            artist.Id = await _repository.AddArtistAsync(artist);
-        }
-
-        // 4. Ensure Album Exists
-        var album = await _repository.GetAlbumByTitleAndArtistAsync(metadata.AlbumTitle, artist.Id);
-        if (album == null)
-        {
-            album = new Album { Id = 0, Title = metadata.AlbumTitle, Artist = artist };
-            album.Id = await _repository.AddAlbumAsync(album);
+            throw new SongAlreadyRegisteredException(metadata.Title, albumTitle);
         }
 
         // 5. Generate a Deterministic Filename
         var extension = Path.GetExtension(command.BlobUri);
-        var safeFileName = GenerateDeterministicFileName(command.UploaderId, metadata.AlbumTitle, metadata.Title, extension);
+        var safeFileName = GenerateDeterministicFileName(command.UploaderId, albumTitle, metadata.Title, extension);
 
-        // 6. Persist Media to permanent storage (Dumb Overwrite)
-        using var uploadStream = await _storage.OpenReadStreamAsync(command.BlobUri);
-        await _storage.UploadFileAsync(safeFileName, uploadStream);
+        // 6. Persist Media to permanent storage
+        try
+        {
+            using var uploadStream = await _storage.OpenLandingZoneStreamAsync(command.BlobUri);
+            await _storage.PersistToPermanentStorageAsync(safeFileName, uploadStream);
+        }
+        catch (Exception ex)
+        {
+            throw new StorageOperationException("PersistToPermanentStorage", command.BlobUri, ex);
+        }
 
         // 7. Persist Metadata to database
-        var song = new Song
+        try
         {
-            Id = 0,
-            Title = metadata.Title,
-            Album = album,
-            ReleaseDate = metadata.ReleaseDate,
-            FileName = safeFileName,
-            Likes = new List<Like>()
-        };
+            var song = new Song
+            {
+                Id = 0,
+                Title = metadata.Title,
+                Album = album,
+                ReleaseDate = metadata.ReleaseDate,
+                FileName = safeFileName,
+                Likes = new List<Like>()
+            };
 
-        await _repository.AddSongAsync(song);
+            await _repository.AddSongAsync(song);
+        }
+        catch (Exception ex)
+        {
+            throw new ApplicationException($"Failed to persist song metadata for '{metadata.Title}'", ex);
+        }
 
         // 8. Cleanup the audio file from landing zone
-        await _storage.DeleteFileAsync(command.BlobUri);
+        try
+        {
+            await _storage.PurgeFromLandingZoneAsync(command.BlobUri);
+        }
+        catch (Exception ex)
+        {
+            // We might not want to fail the whole operation if cleanup fails, 
+            // but for maximum visibility we'll throw and let it retry or DLQ.
+            throw new StorageOperationException("PurgeFromLandingZone", command.BlobUri, ex);
+        }
     }
 
     private string GenerateDeterministicFileName(string userId, string album, string title, string extension)
     {
-        string Slugify(string text) => 
-            Regex.Replace(text.ToLowerInvariant(), @"[^a-z0-9]", "-").Trim('-');
+        string Slugify(string text)
+        {
+            // Remove null characters and other non-printable control characters
+            var cleanText = new string(text.Where(c => !char.IsControl(c) && c != '\0').ToArray());
+            return Regex.Replace(cleanText.ToLowerInvariant(), @"[^a-z0-9]", "-").Trim('-');
+        }
 
         return $"{Slugify(userId)}-{Slugify(album)}-{Slugify(title)}{extension}";
     }

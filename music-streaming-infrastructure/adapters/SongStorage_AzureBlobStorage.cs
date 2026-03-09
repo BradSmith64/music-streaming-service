@@ -7,68 +7,67 @@ namespace music_streaming_infrastructure;
 
 public class SongStorage_AzureBlobStorage : ISongStorage
 {
-    private readonly StorageSharedKeyCredential _credentials;
+    private readonly BlobServiceClient _blobServiceClient;
+    private readonly string _containerName;
+    private readonly string _landingZoneContainerName = "songs-landing-zone";
     private readonly string _accountName;
     private readonly string _accountKey;
-    private readonly string _containerName;
     private readonly int _expiryMinutes;
-
 
     public SongStorage_AzureBlobStorage(SongStorage_AzureBlobStorageOptions options)
     {
+        var connectionString = $"DefaultEndpointsProtocol=https;AccountName={options.AccountName};AccountKey={options.AccountKey};EndpointSuffix=core.windows.net";
+        _blobServiceClient = new BlobServiceClient(connectionString);
+        _containerName = options.ContainerName;
         _accountName = options.AccountName;
         _accountKey = options.AccountKey;
-        _containerName = options.ContainerName;
         _expiryMinutes = options.ExpiryMinutes ?? 60;
-
-        _credentials = new StorageSharedKeyCredential(options.AccountName, options.AccountKey);
     }
 
-    public string? GetFileUri(string? fileName)
+    public string? GeneratePublicStreamingUri(string? fileName)
     {
-        if( fileName == null)
-        {
-            return null;
-        }
+        if (string.IsNullOrEmpty(fileName)) return null;
 
-        // Create blob client
-        var blobClient = new BlobClient(
-            new Uri($"https://{_accountName}.blob.core.windows.net/{_containerName}/{fileName}"),
-            _credentials);
+        var blobClient = _blobServiceClient.GetBlobContainerClient(_containerName).GetBlobClient(fileName);
 
-        // Build SAS
         var sasBuilder = new BlobSasBuilder
         {
             BlobContainerName = _containerName,
             BlobName = fileName,
-            Resource = "b", // "b" = blob, "c" = container
-            ExpiresOn = DateTimeOffset.UtcNow.AddHours(_expiryMinutes)
+            Resource = "b",
+            ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(_expiryMinutes)
         };
 
-        // Permissions
         sasBuilder.SetPermissions(BlobSasPermissions.Read);
 
-        // Generate full SAS URI
-        Uri sasUri = blobClient.GenerateSasUri(sasBuilder);
+        var sasToken = sasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential(_accountName, _accountKey)).ToString();
 
-        Console.WriteLine($"Generated SAS token {sasUri.ToString()}");
-
-        return sasUri.ToString();
+        return $"{blobClient.Uri}?{sasToken}";
     }
 
-    public Task DeleteFileAsync(string blobUri)
+    public async Task<Stream> OpenLandingZoneStreamAsync(string blobUri)
     {
-        throw new NotImplementedException();
+        var blobClient = new BlobClient(new Uri(blobUri), new StorageSharedKeyCredential(_accountName, _accountKey));
+        
+        // We buffer because TagLib# needs seekability
+        var ms = new MemoryStream();
+        await blobClient.DownloadToAsync(ms);
+        ms.Position = 0;
+        return ms;
     }
 
-    public Task<Stream> OpenReadStreamAsync(string blobUri)
+    public async Task PersistToPermanentStorageAsync(string fileName, Stream content)
     {
-        throw new NotImplementedException();
+        var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+        var blobClient = containerClient.GetBlobClient(fileName);
+        
+        await blobClient.UploadAsync(content, overwrite: true);
     }
 
-    public Task UploadFileAsync(string path, Stream content)
+    public async Task PurgeFromLandingZoneAsync(string blobUri)
     {
-        throw new NotImplementedException();
+        var blobClient = new BlobClient(new Uri(blobUri), new StorageSharedKeyCredential(_accountName, _accountKey));
+        await blobClient.DeleteIfExistsAsync();
     }
 }
 

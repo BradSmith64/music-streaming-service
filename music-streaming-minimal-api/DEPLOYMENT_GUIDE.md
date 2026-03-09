@@ -12,11 +12,19 @@ The workflow is defined in `.github/workflows/azure-web-app.yml`. It performs th
 - Publishes the application specifically for **linux-x64**.
 - Deploys the artifacts to the Azure App Service using a **Publish Profile**.
 
-### 2. Required Secrets
-To enable the pipeline, the following secret must be configured in your GitHub repository (**Settings > Secrets and variables > Actions**):
-- `AZURE_WEBAPP_PUBLISH_PROFILE`: The XML publish profile downloaded from the Azure Portal (or via `az webapp deployment list-publishing-profiles`).
+### 2. Automated Secret Management (Terraform)
+To enable the pipeline, the following secrets are automatically provisioned in your GitHub repository by the **Terraform Infrastructure** code:
 
-### 3. Manual Trigger
+- `AZURE_CLIENT_ID`: The Application (client) ID of the Service Principal.
+- `AZURE_CLIENT_SECRET`: The Client Secret value of the Service Principal.
+- `AZURE_TENANT_ID`: The Directory (tenant) ID.
+- `AZURE_SUBSCRIPTION_ID`: Your Azure Subscription ID.
+- `AZURE_WEBAPP_NAME`: The name of the generated App Service (e.g., `app-api-music-xxxx`).
+
+### 3. Manual Configuration (Optional)
+If you are not using Terraform, you must manually create an Azure Service Principal and add these values to **Settings > Secrets and variables > Actions**.
+
+### 4. Manual Trigger
 You can also trigger a deployment manually from the **Actions** tab in GitHub by selecting the "Build and Deploy .NET 8 Backend to Azure" workflow and clicking **Run workflow**.
 
 ---

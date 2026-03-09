@@ -5,7 +5,7 @@ namespace music_streaming_application;
 public interface ISongRepository
 {
     public Task<Song> GetSongByIdAsync(int songId);
-    public Task<Song?> GetSongByTitleAndAlbumAsync(string title, string albumTitle);
+    public Task<Song?> GetSongByTitleAlbumAndArtistAsync(string title, string albumTitle, int artistId);
     public Task<int> AddSongAsync(Song song);
 
     public Task<Artist?> GetArtistByNameAsync(string name);
